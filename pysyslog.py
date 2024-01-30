@@ -22,13 +22,20 @@ import socketserver
 
 logging.basicConfig(level=logging.INFO, format='%(message)s', datefmt='', filename=LOG_FILE, filemode='a')
 
+from tinydb import TinyDB
+from datetime import datetime
+
+db = TinyDB('logs/syslog.json')
+table = db.table('logs')
 
 class SyslogUDPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         data = bytes.decode(self.request[0].strip())
-        print(f"{self.client_address[0]}: {data}")
+        print(f"{self.client_address[0]} | {data}")
         logging.info(str(data))
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        table.insert({'timestamp': timestamp, 'client': self.client_address[0], 'payload': data})
 
 
 if __name__ == "__main__":
@@ -39,4 +46,5 @@ if __name__ == "__main__":
     except (IOError, SystemExit):
         raise
     except KeyboardInterrupt:
+        db.close()
         print("Crtl+C Pressed. Shutting down.")
