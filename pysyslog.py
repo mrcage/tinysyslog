@@ -31,10 +31,10 @@ table = db.table('logs')
 class SyslogUDPHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
-        data = bytes.decode(self.request[0].strip())
-        print(f"{self.client_address[0]} | {data}")
-        logging.info(str(data))
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        data = bytes.decode(self.request[0].strip())
+        print(f"{timestamp} | {self.client_address[0]} | {data}")
+        logging.info(str(data))
         table.insert({'timestamp': timestamp, 'client': self.client_address[0], 'payload': data})
 
 
